@@ -22,15 +22,15 @@ class AuthService
 
 
 
-  public async Task<bool> authenticateAsync()
+  public async Task<bool> AuthenticateAsync()
   {
-    bool auth = await isAuthenticated();
+    bool auth = await IsAuthenticated();
     for (int i = 0; i < 3; i++)
     {
       if (!auth)
       {
         Console.WriteLine("Trying to login... TRY:" + (i + 1) + " withRefreshToken:" + !String.IsNullOrEmpty(_refreshToken));
-        auth = await getCookieAsync(!String.IsNullOrEmpty(_refreshToken));
+        auth = await GetCookieAsync(!String.IsNullOrEmpty(_refreshToken));
       }
       else
       {
@@ -44,7 +44,7 @@ class AuthService
     return false;
   }
 
-  public async Task<bool> getCookieAsync(bool refresh = false)
+  public async Task<bool> GetCookieAsync(bool refresh = false)
   {
     // Send a get request to login page to retrive Session cookie.
     var url = "https://employee.studentconsulting.com/login";
@@ -91,7 +91,7 @@ class AuthService
 
 
       // Save the token and refresh token if the token is valid
-      if (await isAuthenticated())
+      if (await IsAuthenticated())
       {
         pattern = @"(?<=""refresh_token"":"")[^""]+";
         match = Regex.Match(html, pattern);
@@ -107,7 +107,7 @@ class AuthService
       return false;
     }
   }
-  public async Task<bool> isAuthenticated()
+  public async Task<bool> IsAuthenticated()
   {
     var checkCookie = await _client.GetAsync(
     "https://service-api.studentconsulting.com/v1/employee/availability?fromDate=2023-09-04&toDate=2023-10-01"

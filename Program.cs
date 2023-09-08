@@ -42,8 +42,8 @@ namespace NejTack
 
 
             var authenticator = new AuthService(httpClientFactory, username, password, secret);
-            System.Console.WriteLine("MAIN:" + await authenticator.authenticateAsync());
-            System.Console.WriteLine("MAIN:" + await authenticator.authenticateAsync());
+            System.Console.WriteLine("MAIN:" + await authenticator.AuthenticateAsync());
+            System.Console.WriteLine("MAIN:" + await authenticator.AuthenticateAsync());
 
         }
     }
