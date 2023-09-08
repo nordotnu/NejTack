@@ -1,0 +1,5 @@
+# NejTack
+ An application that automatically sets your availability status to "unavailable" at the beginning of the day for the StudentCounsulting staffing agency.
+
+### Background
+As of now, I'm employed part-time/extra at a logistics facility through a staffing agency. Due to the unpredictable nature of the job demand, the agency requires us to specify our weekly availability. Typically, work assignments are confirmed two to three days in advance. However, there are occasions when last-minute bookings occur, particularly on the same day. This poses a challenge for me as I work night shifts and need to adjust my sleep schedule accordingly. After reaching out to the agency regarding this issue, their solution was simple: update my availability in their app. While this resolved the problem in theory, remembering to make myself unavailable each day before a shift is not going to happend. So, I decided to put a little automation magic into play!
