@@ -1,8 +1,7 @@
-using System.Net;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
-class AuthService
+class AuthService : IAuthService
 {
   private readonly HttpClient _client;
 
@@ -113,6 +112,10 @@ class AuthService
     "https://service-api.studentconsulting.com/v1/employee/availability?fromDate=2023-09-04&toDate=2023-10-01"
     );
     return checkCookie.IsSuccessStatusCode;
+  }
+  public async Task<HttpResponseMessage> PutAsync(string url)
+  {
+    return await _client.PutAsync(url, null);
   }
 
 }

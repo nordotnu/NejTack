@@ -1,9 +1,7 @@
 ﻿using System.Net;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Hosting;
 
 namespace NejTack
 {
@@ -11,39 +9,42 @@ namespace NejTack
     {
         static async Task Main()
         {
-            var builder = new ConfigurationBuilder()
+            var confBuilder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile($"appsettings.json", true, true);
-            var config = builder.Build();
+            var config = confBuilder.Build();
 
             var username = config["username"];
             var password = config["password"];
             var secret = config["secret"];
 
-            if (username == null || password == null || secret == null ){
+            if (username == null || password == null || secret == null)
+            {
                 System.Console.WriteLine("Could NOT retrive the credintials from the settings");
                 return;
             }
-
+            var builder = Host.CreateApplicationBuilder();
             var cookieContainer = new CookieContainer();
-            // Setup a services
-            var services = new ServiceCollection();
-            services.AddHttpClient("scClient")
+
+            builder.Services.AddHttpClient("scClient")
                     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
                     {
-                        CookieContainer = new CookieContainer(),
+                        CookieContainer = cookieContainer,
                         AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                         AllowAutoRedirect = true
                     });
-            var serviceProvider = services.BuildServiceProvider();
+            builder.Services.AddSingleton<IAuthService>(serviceProvider => new AuthService(
+                serviceProvider.GetService<IHttpClientFactory>()!, username, password, secret));
+            builder.Services.AddSingleton<IAvailabilityService, AvailabilityService>();
+            using var host = builder.Build();
+            var hostProvider = host.Services;
+            using var serviceScope = hostProvider.CreateScope();
+            var provider = serviceScope.ServiceProvider;
+            var authService = provider.GetRequiredService<IAuthService>();
+            var availabilityService = provider.GetRequiredService<IAvailabilityService>();
+            await availabilityService.NotAvailableTask();
 
-
-            var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-
-
-            var authenticator = new AuthService(httpClientFactory, username, password, secret);
-            System.Console.WriteLine("MAIN:" + await authenticator.AuthenticateAsync());
-            System.Console.WriteLine("MAIN:" + await authenticator.AuthenticateAsync());
+            await host.RunAsync();
 
         }
     }
