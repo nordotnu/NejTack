@@ -1,5 +1,5 @@
 interface IAvailabilityService
 {
-    public Task<bool> NotAvailableTask();
+  public Task<bool> NotAvailableTask();
 
 }

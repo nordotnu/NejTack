@@ -1,17 +1,20 @@
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 class AuthService : IAuthService
 {
   private readonly HttpClient _client;
 
-
+  private readonly ILogger<IAuthService> _logger;
   private readonly string _username;
   private readonly string _password;
   private readonly string _secret;
   private string _refreshToken;
-  public AuthService(IHttpClientFactory _httpFactory, string username, string password, string secret)
+  public AuthService(IHttpClientFactory _httpFactory, ILogger<IAuthService> logger, string username, string password, string secret)
   {
+
+    _logger = logger;
     _client = _httpFactory.CreateClient("scClient");
     _username = username;
     _password = password;
@@ -28,16 +31,16 @@ class AuthService : IAuthService
     {
       if (!auth)
       {
-        Console.WriteLine("Trying to login... TRY:" + (i + 1) + " withRefreshToken:" + !String.IsNullOrEmpty(_refreshToken));
+        _logger.LogInformation($"Trying to login, ({i + 1}) withRefreshToken: {!String.IsNullOrEmpty(_refreshToken)}");
         auth = await GetCookieAsync(!String.IsNullOrEmpty(_refreshToken));
       }
       else
       {
-        Console.WriteLine("Logged in!");
+        _logger.LogInformation("Logged in!");
         return true;
       }
     }
-    Console.WriteLine("Failed to login");
+    _logger.LogCritical("Failed to login");
     _refreshToken = "";
     _client.DefaultRequestHeaders.Authorization = null;
     return false;
@@ -108,6 +111,7 @@ class AuthService : IAuthService
   }
   public async Task<bool> IsAuthenticated()
   {
+    _logger.LogInformation("Checking for authentication.");
     var checkCookie = await _client.GetAsync(
     "https://service-api.studentconsulting.com/v1/employee/availability?fromDate=2023-09-04&toDate=2023-10-01"
     );
