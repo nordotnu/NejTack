@@ -1,24 +1,31 @@
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-class AuthService : IAuthService
+class SCService : ISCService
 {
   private readonly HttpClient _client;
 
-  private readonly ILogger<IAuthService> _logger;
+  private readonly ILogger<ISCService> _logger;
+  private readonly IConfiguration? _config;
   private readonly string _username;
   private readonly string _password;
   private readonly string _secret;
+
   private string _refreshToken;
-  public AuthService(IHttpClientFactory _httpFactory, ILogger<IAuthService> logger, string username, string password, string secret)
+  public SCService(IHttpClientFactory _httpFactory, ILogger<ISCService> logger, IConfiguration config)
   {
 
     _logger = logger;
     _client = _httpFactory.CreateClient("scClient");
-    _username = username;
-    _password = password;
-    _secret = secret;
+    _username = config["username"]!;
+    _password = config["password"]!;
+    _secret = config["secret"]!;
+    if (string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password) || string.IsNullOrEmpty(_secret)){
+      _logger.LogCritical("Unvalid configuration!");
+      throw new InvalidDataException("Could NOT find credintials in the appsetting.json!");
+    }
     _refreshToken = "";
   }
 

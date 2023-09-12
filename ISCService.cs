@@ -1,4 +1,4 @@
-interface IAuthService
+interface ISCService
 {
   Task<bool> AuthenticateAsync();
 

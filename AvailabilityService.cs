@@ -3,12 +3,12 @@ using Microsoft.Extensions.Logging;
 class AvailabilityService : IAvailabilityService
 {
   private const string notAvailableEndpoint = "https://service-api.studentconsulting.com/v1/employee/availability/save/wholeday?day={0}&status={1}";
-  private readonly IAuthService _authService;
+  private readonly ISCService _scService;
   private readonly ILogger<IAvailabilityService> _logger;
-  public AvailabilityService(IHttpClientFactory _httpFactory, IAuthService authService, ILogger<IAvailabilityService> logger)
+  public AvailabilityService(IHttpClientFactory _httpFactory, ISCService scService, ILogger<IAvailabilityService> logger)
   {
     _logger = logger;
-    _authService = authService;
+    _scService = scService;
 
   }
 
@@ -18,7 +18,7 @@ class AvailabilityService : IAvailabilityService
     var tut = TimeUntilTomorrow();
     while (tries < 3)
     {
-      _logger.LogInformation($"Waiting {tut.ToString()} set unavailability.");
+      _logger.LogInformation("Waiting {Tut} set unavailability.", tut.ToString());
       await Task.Delay(tut);
       _logger.LogInformation("Starting the setting procces...");
       var result = await PutNotAvailable();
@@ -41,7 +41,7 @@ class AvailabilityService : IAvailabilityService
 
   private async Task<bool> PutNotAvailable()
   {
-    var authenticated = await _authService.AuthenticateAsync();
+    var authenticated = await _scService.AuthenticateAsync();
     if (!authenticated)
     {
       return false;
@@ -50,14 +50,14 @@ class AvailabilityService : IAvailabilityService
     string url = String.Format(notAvailableEndpoint, date, "NotAvailable");
     try
     {
-      var httpMessage = await _authService.PutAsync(url);
+      var httpMessage = await _scService.PutAsync(url);
       if (httpMessage.IsSuccessStatusCode)
       {
-        _logger.LogInformation($"Set the day {date} successfully.");
+        _logger.LogInformation("Set the day {Date} successfully.", date);
         return true;
       }
-      _logger.LogError($"Failed to set the day {date}.");
-      _logger.LogInformation($"Response code: {httpMessage.StatusCode.ToString()}");
+      _logger.LogError("Failed to set the day {Date}.", date);
+      _logger.LogInformation("Response code: {Code}", httpMessage.StatusCode);
       return false;
     }
     catch (System.Exception)
@@ -66,7 +66,7 @@ class AvailabilityService : IAvailabilityService
     }
 
   }
-  TimeSpan TimeUntilTomorrow()
+  static TimeSpan TimeUntilTomorrow()
   {
     DateTime now = DateTime.Now;
     DateTime tomorrow = now.AddDays(1).Date;
