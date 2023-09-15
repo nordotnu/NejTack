@@ -30,30 +30,24 @@ namespace Services
         {
           var json = await _scService.GetInquiriesJson();
           var inquiries = DeserializeInquiries(json);
-          var acceptInquiries = new List<Inquiry>();
-          for (int i = 0; i < inquiries.Count; i++)
+          var availability = arConfig.Accept;
+          List<Inquiry> acceptInquiries = GetAcceptInquiries(inquiries, availability);
+          if (acceptInquiries.Count == 0)
           {
-            var inquiry = inquiries[i];
-            for (int j = 0; j < arConfig.Accept.Count; j++)
-            {
-              var accept = arConfig.Accept[j];
-              var sameStart = accept.Start.CompareTo(inquiry.Interval.Start) == 0;
-              var sameEnd = accept.End.CompareTo(inquiry.Interval.End) == 0;
-              if (sameStart && sameEnd)
-              {
-                acceptInquiries.Add(inquiry);
-              }
-            }
+            _logger.LogInformation("No inquiries ({Count}) that fit the availability.", inquiries.Count);
           }
           foreach (var i in acceptInquiries)
           {
             var j = SerializerResponse(i);
-            _logger.LogError("Accepted: {Yes}", j);
+            var result = await _scService.PostResponse(j);
+
+            _logger.LogInformation("Accepted: {Yes}", result ? "Yes" : "Failed to send.");
           }
+          _logger.LogInformation("Waiting {Time} min untill the next cycle...", arConfig.Cycle / 60000);
         }
         try
         {
-          await Task.Delay(100000, source.Token);
+          await Task.Delay(arConfig.Cycle, source.Token);
         }
         catch (TaskCanceledException)
         {
@@ -65,6 +59,25 @@ namespace Services
       }
     }
 
+    private static List<Inquiry> GetAcceptInquiries(List<Inquiry> inquiries, List<Interval> availability)
+    {
+      var acceptInquiries = new List<Inquiry>();
+      for (int i = 0; i < inquiries.Count; i++)
+      {
+        var inquiry = inquiries[i];
+        for (int j = 0; j < availability.Count; j++)
+        {
+          var accept = availability[j];
+          var sameStart = accept.Start.CompareTo(inquiry.Interval.Start) == 0;
+          var sameEnd = accept.End.CompareTo(inquiry.Interval.End) == 0;
+          if (sameStart && sameEnd)
+          {
+            acceptInquiries.Add(inquiry);
+          }
+        }
+      }
+      return acceptInquiries;
+    }
 
     private AutoResponseConfig GetAutoResponseConfig()
     {
@@ -77,7 +90,7 @@ namespace Services
       return arConfig;
     }
 
-    private string SerializerResponse(Inquiry inquiry)
+    private string SerializerResponse(Inquiry inquiry, bool accept = true)
     {
       Response response = new()
       {
@@ -86,7 +99,7 @@ namespace Services
         Inquiries = new List<ResponseInquiry> {
           new() {
             Id = inquiry.Id,
-            Response = "Accepted",
+            Response = accept ? "Accepted" : "Rejected",
             AcceptedInterval = new() {
               Start = inquiry.Interval.Start.ToUniversalTime(),
               End = inquiry.Interval.End.ToUniversalTime()

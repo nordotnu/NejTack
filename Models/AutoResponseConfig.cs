@@ -4,6 +4,7 @@ namespace Models
   {
     public bool Status { get; set; }
     public bool RejectOthers { get; set; }
+    public required int Cycle { get; set; }
     public required List<Interval> Accept { get; set; }
   }
 }

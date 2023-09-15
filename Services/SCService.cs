@@ -1,13 +1,16 @@
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Models;
 
 namespace Services
 {
   class SCService : ISCService
   {
     const string INQUIRY_URL = "https://service-api.studentconsulting.com/v1/employee/inquiry/notresponded";
+    const string RESPONSE_URL = "https://service-api.studentconsulting.com/v1/employee/inquiry/response";
     private readonly HttpClient _client;
     private readonly ILogger<ISCService> _logger;
     private readonly IConfiguration? _config;
@@ -138,6 +141,26 @@ namespace Services
         }
       }
       return "";
+    }
+    public async Task<bool> PostResponse(string jsonData)
+    {
+      var isAuthenticated = await AuthenticateAsync();
+      if (isAuthenticated)
+      {
+        var data = new StringContent(jsonData, Encoding.UTF8, "application/json");
+        var httpResponse = await _client.PostAsync(RESPONSE_URL, data);
+        if (httpResponse.IsSuccessStatusCode)
+        {
+          _logger.LogInformation("Posted inquiry successfully");
+          return true;
+        }
+        else
+        {
+          _logger.LogWarning("Received non success code while sending response. {Code}",
+           httpResponse.StatusCode);
+        }
+      }
+      return false;
     }
   }
 }

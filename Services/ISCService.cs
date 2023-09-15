@@ -5,4 +5,5 @@ interface ISCService
     Task<bool> IsAuthenticated();
     Task<HttpResponseMessage> PutAsync(string url);
     Task<string> GetInquiriesJson();
+    Task<bool> PostResponse(string jsonData);
 }
