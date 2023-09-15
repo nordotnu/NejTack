@@ -28,11 +28,10 @@ namespace NejTack
                   services.AddSingleton<IAutoResponseService, AutoResponseService>();
                 })
                 .Build();
-/*       var svc = ActivatorUtilities.CreateInstance<AvailabilityService>(host.Services);
-      await svc.NotAvailableTask(); */
-      var svc = ActivatorUtilities.CreateInstance<AutoResponseService>(host.Services);
-      await svc.Run();
-
+      var arsvc = ActivatorUtilities.CreateInstance<AutoResponseService>(host.Services);
+      _ = arsvc.Run();
+      var nasvc = ActivatorUtilities.CreateInstance<AvailabilityService>(host.Services);
+      await nasvc.NotAvailableTask();
     }
 
     static void BuildConfig(IConfigurationBuilder builder)

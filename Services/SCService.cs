@@ -11,6 +11,10 @@ namespace Services
   {
     const string INQUIRY_URL = "https://service-api.studentconsulting.com/v1/employee/inquiry/notresponded";
     const string RESPONSE_URL = "https://service-api.studentconsulting.com/v1/employee/inquiry/response";
+    const string TOKEN_URL = "https://id.studentconsulting.com/connect/token";
+    const string LOGIN_URL = "https://employee.studentconsulting.com/login";
+    const string AVAILABLE_URL = "https://service-api.studentconsulting.com/v1/employee/availability/save/wholeday?day={0}&status={1}";
+
     private readonly HttpClient _client;
     private readonly ILogger<ISCService> _logger;
     private readonly IConfiguration? _config;
@@ -41,7 +45,8 @@ namespace Services
       {
         if (!auth)
         {
-          _logger.LogInformation($"Trying to login, ({i + 1}) withRefreshToken: {!String.IsNullOrEmpty(_refreshToken)}");
+          _logger.LogInformation("Trying to login, ({Tries}) with refresh-token: {Status}",
+                                i + 1, !String.IsNullOrEmpty(_refreshToken));
           auth = await GetCookieAsync(!String.IsNullOrEmpty(_refreshToken));
         }
         else
@@ -59,7 +64,7 @@ namespace Services
     public async Task<bool> GetCookieAsync(bool refresh = false)
     {
       // Send a get request to login page to retrive Session cookie.
-      var url = "https://employee.studentconsulting.com/login";
+      var url = LOGIN_URL;
       var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
       try
       {
@@ -90,7 +95,7 @@ namespace Services
       {
         // Request the token
         var content = await _client.PostAsync(
-            "https://id.studentconsulting.com/connect/token",
+            TOKEN_URL,
             cred);
         var html = await content.Content.ReadAsStringAsync();
 
@@ -142,6 +147,7 @@ namespace Services
       }
       return "";
     }
+
     public async Task<bool> PostResponse(string jsonData)
     {
       var isAuthenticated = await AuthenticateAsync();
@@ -160,6 +166,27 @@ namespace Services
            httpResponse.StatusCode);
         }
       }
+      return false;
+    }
+
+    public async Task<bool> PutNotAvailable()
+    {
+      var isAuthenticated = await AuthenticateAsync();
+      if (!isAuthenticated)
+      {
+        return false;
+      }
+      var date = DateTime.Now.ToString("yyyy-MM-dd");
+      string url = String.Format(AVAILABLE_URL, date, "NotAvailable");
+
+      var httpMessage = await _client.PutAsync(url, null);
+      if (httpMessage.IsSuccessStatusCode)
+      {
+        _logger.LogInformation("Set the day {Date} successfully.", date);
+        return true;
+      }
+      _logger.LogError("Failed to set the day {Date}.", date);
+      _logger.LogInformation("Response code: {Code}", httpMessage.StatusCode);
       return false;
     }
   }

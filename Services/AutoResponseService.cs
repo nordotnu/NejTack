@@ -107,7 +107,11 @@ namespace Services
           }
         }
       };
-      var options = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = new LowerCaseNamingPolicy() };
+      var options = new JsonSerializerOptions
+      {
+        WriteIndented = true,
+        PropertyNamingPolicy = new LowerCaseNamingPolicy()
+      };
       string jsonString = JsonSerializer.Serialize(response, options);
       return jsonString;
     }

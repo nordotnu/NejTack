@@ -23,7 +23,7 @@ namespace Services
         _logger.LogInformation("Waiting {Tut} set unavailability.", tut.ToString());
         await Task.Delay(tut);
         _logger.LogInformation("Starting the setting procces...");
-        var result = await PutNotAvailable();
+        var result = await _scService.PutNotAvailable();
         if (result)
         {
           tut = TimeUntilTomorrow();
@@ -41,33 +41,7 @@ namespace Services
       return false;
     }
 
-    private async Task<bool> PutNotAvailable()
-    {
-      var authenticated = await _scService.AuthenticateAsync();
-      if (!authenticated)
-      {
-        return false;
-      }
-      var date = DateTime.Now.ToString("yyyy-MM-dd");
-      string url = String.Format(notAvailableEndpoint, date, "NotAvailable");
-      try
-      {
-        var httpMessage = await _scService.PutAsync(url);
-        if (httpMessage.IsSuccessStatusCode)
-        {
-          _logger.LogInformation("Set the day {Date} successfully.", date);
-          return true;
-        }
-        _logger.LogError("Failed to set the day {Date}.", date);
-        _logger.LogInformation("Response code: {Code}", httpMessage.StatusCode);
-        return false;
-      }
-      catch (System.Exception)
-      {
-        return false;
-      }
-
-    }
+    
     static TimeSpan TimeUntilTomorrow()
     {
       DateTime now = DateTime.Now;
