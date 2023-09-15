@@ -5,7 +5,7 @@ namespace Models
         public int Id { get; set; }
         public int BlockId { get; set; }
         public DateTime Day { get; set; }
-        public Interval? Interval { get; set; }
+        public required Interval Interval { get; set; }
         public double Hours { get; set; }
         public List<string>? Information { get; set; }
         public List<DetailedInformation>? DetailedInformation { get; set; }

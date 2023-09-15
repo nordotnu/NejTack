@@ -7,6 +7,7 @@ namespace Services
 {
   class SCService : ISCService
   {
+    const string INQUIRY_URL = "https://service-api.studentconsulting.com/v1/employee/inquiry/notresponded";
     private readonly HttpClient _client;
     private readonly ILogger<ISCService> _logger;
     private readonly IConfiguration? _config;
@@ -51,7 +52,7 @@ namespace Services
       _client.DefaultRequestHeaders.Authorization = null;
       return false;
     }
-    
+
     public async Task<bool> GetCookieAsync(bool refresh = false)
     {
       // Send a get request to login page to retrive Session cookie.
@@ -116,15 +117,27 @@ namespace Services
     public async Task<bool> IsAuthenticated()
     {
       _logger.LogInformation("Checking for authentication.");
-      var checkCookie = await _client.GetAsync(
-      "https://service-api.studentconsulting.com/v1/employee/availability?fromDate=2023-09-04&toDate=2023-10-01"
-      );
+      var checkCookie = await _client.GetAsync(INQUIRY_URL);
       return checkCookie.IsSuccessStatusCode;
     }
 
     public async Task<HttpResponseMessage> PutAsync(string url)
     {
       return await _client.PutAsync(url, null);
+    }
+
+    public async Task<string> GetInquiriesJson()
+    {
+      var isAuthenticated = await AuthenticateAsync();
+      if (isAuthenticated)
+      {
+        var httpResponse = await _client.GetAsync(INQUIRY_URL);
+        if (httpResponse.IsSuccessStatusCode)
+        {
+          return await httpResponse.Content.ReadAsStringAsync();
+        }
+      }
+      return "";
     }
   }
 }

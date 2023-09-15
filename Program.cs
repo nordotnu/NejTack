@@ -31,7 +31,7 @@ namespace NejTack
 /*       var svc = ActivatorUtilities.CreateInstance<AvailabilityService>(host.Services);
       await svc.NotAvailableTask(); */
       var svc = ActivatorUtilities.CreateInstance<AutoResponseService>(host.Services);
-      svc.Run();
+      await svc.Run();
 
     }
 
