@@ -15,7 +15,7 @@ Rename the appsettings.EXAMPLE.json to appsettings.json.
   "username": "MAIL", # Email.
   "password": "PASSWORD", # Password.
   "secret": "SECRET", # Account's secret.
-  "availability" : true, # Run the availability service (Needs restart).
+  "availability": true, # Run the availability service (Needs restart).
   "autoresponse": { # Setting up the auto-response service (Hot-reloaded).
     "status": true,  
     "cycle": 300000, # Cycle time between checks in milliseconds.
