@@ -10,16 +10,16 @@ As of now, I'm employed part-time/extra at a logistics facility through a staffi
 
 ### Configurations
 Rename the appsettings.EXAMPLE.json to appsettings.json.
-```json
+```yaml
 {
-  "username": "MAIL", // Email.
-  "password": "PASSWORD", // Password.
-  "secret": "SECRET", // Account's secret.
-  "availability" : true, // Run the availability service (Needs restart).
-  "autoresponse": { // Setting up the auto-response service (Hot-reloaded).
+  "username": "MAIL", # Email.
+  "password": "PASSWORD", # Password.
+  "secret": "SECRET", # Account's secret.
+  "availability" : true, # Run the availability service (Needs restart).
+  "autoresponse": { # Setting up the auto-response service (Hot-reloaded).
     "status": true,  
-    "cycle": 300000, // Cycle time between checks in milliseconds.
-    "accept": [ // List of intervals to be automaticlly accepted.
+    "cycle": 300000, # Cycle time between checks in milliseconds.
+    "accept": [ # List of intervals to be automaticlly accepted.
       {
         "start": "2023-09-29T19:00:00.000Z",
         "end": "2023-09-30T04:00:00.000Z"
