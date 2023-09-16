@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Services;
+using System.Diagnostics;
 
 namespace NejTack
 {
@@ -29,9 +30,10 @@ namespace NejTack
                 })
                 .Build();
       var arsvc = ActivatorUtilities.CreateInstance<AutoResponseService>(host.Services);
-      _ = arsvc.Run();
+      var arTask = arsvc.Run();
       var nasvc = ActivatorUtilities.CreateInstance<AvailabilityService>(host.Services);
-      await nasvc.NotAvailableTask();
+      var naTask = nasvc.NotAvailableTask();
+      await Task.Delay(-1);
     }
 
     static void BuildConfig(IConfigurationBuilder builder)

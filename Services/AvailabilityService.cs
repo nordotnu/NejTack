@@ -1,21 +1,28 @@
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Services
 {
   class AvailabilityService : IAvailabilityService
   {
-    private const string notAvailableEndpoint = "https://service-api.studentconsulting.com/v1/employee/availability/save/wholeday?day={0}&status={1}";
     private readonly ISCService _scService;
     private readonly ILogger<IAvailabilityService> _logger;
-    public AvailabilityService(ISCService scService, ILogger<IAvailabilityService> logger)
+    private readonly IConfiguration _config;
+    public AvailabilityService(ISCService scService, IConfiguration config, ILogger<IAvailabilityService> logger)
     {
       _logger = logger;
+      _config = config;
       _scService = scService;
     }
 
     public async Task<bool> NotAvailableTask()
     {
+      var run = _config.GetSection("availability").Get<bool>();
+      if(!run) {
+        return false;
+      }
+      _logger.LogInformation("Running the availability service.");
       var tries = 0;
       var tut = TimeUntilTomorrow();
       while (tries < 3)
@@ -41,7 +48,7 @@ namespace Services
       return false;
     }
 
-    
+
     static TimeSpan TimeUntilTomorrow()
     {
       DateTime now = DateTime.Now;
